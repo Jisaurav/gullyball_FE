@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 
-
 export default function Home() {
   const [credentials, setCredentials] = useState({
     name: "",
@@ -50,13 +49,38 @@ export default function Home() {
         console.log(position)
         setLatitude(position.coords.latitude);
         setLongitude(position.coords.longitude);
+        
       } catch (error) {
         console.log(error);
       }
     };
     position();
+    
   }, []); 
-  
+
+  useEffect(() => {
+    fetch_address();
+  }, [latitude, longitude]);
+
+  const fetch_address=()=>{
+    if (latitude !== null && longitude !== null) {
+      const url = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`;
+    
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          const address = data.display_name;
+          console.log("Address from home:", address);
+          setCredentials({ ...credentials, geolocation: address });
+        })
+        .catch(error => {
+          console.error("Error getting address:", error);
+        });
+      }
+      else{
+        console.error("Latitude or longitude is null");
+      }
+  };
   return (
     <div>
       <div>
@@ -109,7 +133,7 @@ export default function Home() {
               aria-describedby="emailHelp"
             />
           </div>
-
+          
           <div className="m-3">
             <label htmlFor="address" className="form-label">
               Address
@@ -119,7 +143,7 @@ export default function Home() {
               type="text"
               className="form-control"
               name="geolocation"
-              placeholder='"Click below for fetching address"'
+              placeholder='"Click on Allow for fetching address"'
               value={credentials.geolocation}
               onChange={onChange}
               aria-describedby="emailHelp"
@@ -139,10 +163,7 @@ export default function Home() {
             />
           </div>
           {console.log(credentials)};
-          <div className="m-3">
-      <p>Latitude: {latitude}</p>
-      <p>Longitude: {longitude}</p>
-     </div>
+         
           <button type="submit" className="m-3 btn btn-primary">
             Submit
           </button>
